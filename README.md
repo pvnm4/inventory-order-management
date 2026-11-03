@@ -1,5 +1,6 @@
 # Inventory & Order Management API
 
+
 A REST API for managing products, stock levels, and customer orders. Order placement is fully transactional: stock is locked, checked, and deducted atomically, and the whole operation rolls back on failure, so inventory never goes out of sync and items are never oversold, even under concurrent requests.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
@@ -18,6 +19,7 @@ A REST API for managing products, stock levels, and customer orders. Order place
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
+- [Environment Variables](#environment-variables)
 - [API Documentation](#api-documentation)
 - [API Overview](#api-overview)
 - [SQL Reports](#sql-reports)
@@ -31,6 +33,7 @@ A REST API for managing products, stock levels, and customer orders. Order place
 
 ## Features
 
+<<<<<<< HEAD
 - **Products**: CRUD with unique SKUs, prices, and per-product low-stock thresholds.
 - **Stock management**: read stock and apply positive/negative adjustments; stock can never go below zero.
 - **Orders**: place and retrieve multi-item orders; unit prices are snapshotted at purchase time.
@@ -93,7 +96,7 @@ inventory-api/
 ├── pytest.ini
 ├── requirements.txt
 ├── .env.example
-└── README.md
+|__ Readme.md
 ```
 
 ## Getting Started
@@ -103,17 +106,24 @@ inventory-api/
 - Python 3.10+
 - PostgreSQL 13+
 
-### 1. Clone and install
 
+### 1. Clone and install
 ```bash
 git clone https://github.com/pvnm4/inventory-order-api.git
 cd inventory-order-api
 
+```
+
+### 2. Create a virtual environment and install dependencies
+
+```bash
+>>>>>>> a8989c44e3516b33f7c88d93faafb396550dfbc2
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+<<<<<<< HEAD
 ### 2. Create the databases
 
 ```sql
@@ -122,20 +132,27 @@ CREATE DATABASE inventory_test;   -- used by the test suite
 ```
 
 ### 3. Configure
+=======
+
 
 ```bash
 cp .env.example .env
 ```
 
+<<<<<<< HEAD
 Edit `.env` with your PostgreSQL credentials (see [Configuration](#configuration)).
 
 ### 4. Migrate and run
+=======
+### 4. Run migrations and start the server
+>>>>>>> a8989c44e3516b33f7c88d93faafb396550dfbc2
 
 ```bash
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
+<<<<<<< HEAD
 The API is now live at `http://localhost:8000`.
 
 ## Configuration
@@ -150,12 +167,28 @@ A bare `postgresql://` URL also works; the psycopg2 driver is pinned automatical
 ## API Documentation
 
 With the server running:
+=======
+The API will be available at `http://localhost:8000`.
+
+## Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/inventory
+```
+
+## API Documentation
+
+With the server running, interactive docs are available at:
+>>>>>>> a8989c44e3516b33f7c88d93faafb396550dfbc2
 
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
 ## API Overview
 
+<<<<<<< HEAD
 ### Products
 
 | Method | Endpoint            | Description                                  |
@@ -182,6 +215,36 @@ With the server running:
 | GET    | `/orders/{id}`  | Get an order with its items                           |
 
 **Place an order**
+=======
+> Endpoint paths are illustrative. Update them to match your routes.
+
+### Products
+
+| Method | Endpoint              | Description            |
+| ------ | --------------------- | ---------------------- |
+| GET    | `/products`           | List products          |
+| POST   | `/products`           | Create a product       |
+| GET    | `/products/{id}`      | Get product details    |
+| PUT    | `/products/{id}`      | Update a product       |
+| DELETE | `/products/{id}`      | Delete a product       |
+
+### Stock
+
+| Method | Endpoint                      | Description                    |
+| ------ | ----------------------------- | ------------------------------ |
+| GET    | `/products/{id}/stock`        | Get current stock level        |
+| PATCH  | `/products/{id}/stock`        | Adjust stock (restock, correct)|
+
+### Orders
+
+| Method | Endpoint           | Description                                   |
+| ------ | ------------------ | --------------------------------------------- |
+| POST   | `/orders`          | Place an order (atomic stock update)          |
+| GET    | `/orders`          | List orders                                   |
+| GET    | `/orders/{id}`     | Get order details                             |
+
+**Example: placing an order**
+>>>>>>> a8989c44e3516b33f7c88d93faafb396550dfbc2
 
 ```http
 POST /orders
@@ -195,6 +258,7 @@ Content-Type: application/json
 }
 ```
 
+<<<<<<< HEAD
 ```json
 {
   "id": 1,
@@ -243,10 +307,39 @@ The report queries live in [`sql/`](sql/) as plain SQL and are executed by `app/
 
 The suite runs against a real PostgreSQL database (`TEST_DATABASE_URL`) because the concurrency tests depend on row-level locking, which SQLite doesn't provide.
 
+=======
+If any item has insufficient stock, the request fails and no stock is changed:
+
+```json
+{
+  "detail": "Insufficient stock for product 4"
+}
+```
+
+### Reports
+
+| Method | Endpoint                 | Description                          |
+| ------ | ------------------------ | ------------------------------------ |
+| GET    | `/reports/low-stock`     | Products at or below a stock threshold |
+| GET    | `/reports/sales`         | Sales summary over a date range      |
+
+## SQL Reports
+
+Reports are powered by SQL queries against the order and product tables.
+
+- **Low stock**: lists products whose stock is at or below a configurable threshold so they can be restocked in time.
+- **Sales**: aggregates order data (for example revenue and units sold per product) over a given period.
+
+The queries live in `sql/` (or in the report service). Update this section with the exact location and parameters.
+
+## Running Tests
+
+>>>>>>> a8989c44e3516b33f7c88d93faafb396550dfbc2
 ```bash
 pytest
 ```
 
+<<<<<<< HEAD
 What's covered:
 
 - **Products & stock**: CRUD, pagination, validation, duplicate SKUs, stock never negative, deleting products that have orders.
@@ -260,10 +353,21 @@ What's covered:
 - **Money** is stored as `NUMERIC` and handled as `Decimal`, never floats.
 - **Stock changes only through `/stock` and orders**, so `PUT /products/{id}` deliberately ignores `stock_quantity`.
 - **Schema changes** go through Alembic migrations (`alembic revision --autogenerate -m "..."`), never `create_all` in the app.
+=======
+With verbose output or coverage:
+
+```bash
+pytest -v
+pytest --cov=app
+```
+
+The suite includes concurrency tests that fire simultaneous orders at the same product to verify stock never goes negative and failed orders leave inventory untouched.
+>>>>>>> a8989c44e3516b33f7c88d93faafb396550dfbc2
 
 ## Roadmap
 
 - [ ] JWT authentication and role-based access
+<<<<<<< HEAD
 - [ ] Order cancellation that restocks inventory
 - [ ] Order status workflow (pending, paid, shipped)
 - [ ] Docker and docker-compose setup
@@ -277,6 +381,13 @@ What's covered:
 4. Push to the branch: `git push origin feature/your-feature`
 5. Open a Pull Request
 
+=======
+- [ ] Order status workflow (pending, paid, shipped, cancelled)
+- [ ] Pagination and filtering on list endpoints
+- [ ] Docker and docker-compose setup
+- [ ] CI pipeline with GitHub Actions
+
+>>>>>>> a8989c44e3516b33f7c88d93faafb396550dfbc2
 ## Author
 
 **Pavan Mhaisne**
